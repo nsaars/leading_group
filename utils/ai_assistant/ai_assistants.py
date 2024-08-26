@@ -37,8 +37,7 @@ class AiQuestionAnswering:
         self._system_prompt = ("system", self._prompt_templates['qa_system'])
 
     def _get_docs_from_book_structure(self):
-        pdf_path = r"C:\Users\Administrator\Desktop\New folder (12)\Руководство_Бухгалтерия_для_Узбекистана_ред_3_0 (" \
-                   r"2).pdf "
+        pdf_path = os.path.join(current_dir, 'documents/Руководство_Бухгалтерия_для_Узбекистана_ред_3_0 (2).pdf')
         structure = json.loads(open(os.path.join(current_dir, 'rag/structure.json'), 'r', encoding='utf-8').read())
 
         self._book_text = retrieve_book_text(pdf_path, structure, os.path.join(current_dir, 'rag/images'))
