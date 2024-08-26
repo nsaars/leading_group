@@ -28,7 +28,10 @@ async def ai_conversation_handler(message: types.Message, state: FSMContext):
         for image in images:
             media_group.append(InputMediaPhoto(media=FSInputFile(image), caption=response.get('text')))
 
-    await message.answer_media_group(media=media_group, parse_mode=ParseMode.MARKDOWN)
+        await message.answer_media_group(media=media_group, parse_mode=ParseMode.MARKDOWN)
+    else:
+
+        await message.answer(response.get('text'), parse_mode=ParseMode.MARKDOWN)
 
     # kwargs = response.get('schedule_consultation_kwargs')
     # if kwargs and response.get('success'):
