@@ -1,5 +1,5 @@
 from datetime import datetime
-from database.create_connection import session
+#from database.create_connection import session
 
 from models.consultations import Consultation
 

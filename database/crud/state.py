@@ -1,4 +1,4 @@
-from database.create_connection import session
+#from database.create_connection import session
 from models.states import State
 
 

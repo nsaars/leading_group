@@ -1,5 +1,5 @@
 from models.messages import Message
-from database.create_connection import session
+#from database.create_connection import session
 
 
 def create_message(user_id: int, role: str, text: str, response_type: str = None):

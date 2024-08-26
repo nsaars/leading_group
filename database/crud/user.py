@@ -1,5 +1,5 @@
 from models.users import User
-from database.create_connection import session
+#from database.create_connection import session
 
 
 def get_user_by_telegram_id(telegram_id: int) -> User:

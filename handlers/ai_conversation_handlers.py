@@ -1,12 +1,8 @@
-import re
-
 from aiogram import types
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InputMediaPhoto, FSInputFile
 
-from database.crud.message import create_message
-from database.crud.state import update_state
 from utils.ai_assistant.ai_chain import AiChain
 
 
@@ -21,10 +17,10 @@ async def ai_conversation_handler(message: types.Message, state: FSMContext):
     response: dict = await AiChain.get_proper_response(message.text, history)
 
     await state.update_data({'history': history + [('user', message.text), ('assistant', response.get('text'))]})
-    update_state(state_data.get('db_state_id'),
-                 {'title': 'ai_conversation', 'data': await state.get_data()})  # todo: custom fsm context
-    create_message(state_data.get('db_user_id'), 'user', message.text)
-    create_message(state_data.get('db_user_id'), 'assistant', response.get('text'), response.get('type'))
+    #update_state(state_data.get('db_state_id'),
+    #             {'title': 'ai_conversation', 'data': await state.get_data()})  # todo: custom fsm context
+    #create_message(state_data.get('db_user_id'), 'user', message.text)
+    #create_message(state_data.get('db_user_id'), 'assistant', response.get('text'), response.get('type'))
 
     media_group = []
     for image in response.get('images'):
