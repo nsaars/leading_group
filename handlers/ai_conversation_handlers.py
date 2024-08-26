@@ -23,8 +23,10 @@ async def ai_conversation_handler(message: types.Message, state: FSMContext):
     #create_message(state_data.get('db_user_id'), 'assistant', response.get('text'), response.get('type'))
 
     media_group = []
-    for image in response.get('images'):
-        media_group.append(InputMediaPhoto(media=FSInputFile(image), caption=response.get('text')))
+    images = response.get('images')
+    if images:
+        for image in images:
+            media_group.append(InputMediaPhoto(media=FSInputFile(image), caption=response.get('text')))
 
     await message.answer_media_group(media=media_group, parse_mode=ParseMode.MARKDOWN)
 
