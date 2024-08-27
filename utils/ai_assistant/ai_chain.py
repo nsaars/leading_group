@@ -9,6 +9,7 @@ from utils.ai_assistant.functions import date_time_filter
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
+
 class AiChain:
     decision = None
     responses = {
@@ -49,12 +50,14 @@ class AiChain:
                     if function.get('name') == 'schedule_consultation':
                         success, text_response = await date_time_filter(**json.loads(function.get('arguments')))
 
-                        return {'text': text_response, 'success': success, 'schedule_consultation_kwargs': json.loads(function.get('arguments')), 'type': 'schedule_consultation'}
+                        return {'text': text_response, 'success': success,
+                                'schedule_consultation_kwargs': json.loads(function.get('arguments')),
+                                'type': 'schedule_consultation'}
 
             message_text = message.content
             if key == 'type':
                 print(message_text)
-                if message_text == '1':
+                if message_text in ('1', '3'):
                     cls.decision = 'question_response'
                 elif message_text == '4':
                     cls.decision = 'next_question_response'
@@ -66,5 +69,5 @@ class AiChain:
                 if cls.decision and cls.responses.get(cls.decision):
                     images = re.findall(r'изображение:(image_\d+_\d+\.\w+)', cls.responses[cls.decision])
                     response_text = re.sub(r'изображение:image_\d+_\d+\.\w+', '', cls.responses[cls.decision])
-                    print(response_text)
-                    return {'text': response_text, 'type': cls.decision, 'images': [os.path.join(current_dir, f"rag/images/{image_name}") for image_name in images]}
+                    return {'text': response_text, 'type': cls.decision,
+                            'images': [os.path.join(current_dir, f"rag/images/{image_name}") for image_name in images]}
