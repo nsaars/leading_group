@@ -67,4 +67,4 @@ class AiChain:
                     images = re.findall(r'изображение:(image_\d+_\d+\.\w+)', cls.responses[cls.decision])
                     response_text = re.sub(r'изображение:image_\d+_\d+\.\w+', '', cls.responses[cls.decision])
                     print(response_text)
-                    return {'text': response_text, 'type': cls.decision, 'images': [os.path.join(current_dir, f"rag\\images\\{image_name}") for image_name in images]}
+                    return {'text': response_text, 'type': cls.decision, 'images': [os.path.join(current_dir, f"rag/images/{image_name}") for image_name in images]}
