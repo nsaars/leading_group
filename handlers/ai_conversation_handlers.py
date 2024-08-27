@@ -27,7 +27,7 @@ async def ai_conversation_handler(message: types.Message, state: FSMContext):
     if images:
         for image in images:
             media_group.append(InputMediaPhoto(media=FSInputFile(image), caption=response.get('text')))
-
+        print(media_group, response.get('text'))
         await message.answer_media_group(media=media_group, parse_mode=ParseMode.MARKDOWN)
     else:
 
