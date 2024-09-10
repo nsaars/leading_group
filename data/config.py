@@ -1,4 +1,5 @@
 import json
+import os
 
 from environs import Env
 
@@ -14,4 +15,3 @@ CREDENTIALS = json.loads(env.str('CREDENTIALS'))
 LANGCHAIN_TRACING_V2 = env.str('LANGCHAIN_TRACING_V2')
 LANGCHAIN_API_KEY = env.str('LANGCHAIN_API_KEY')
 OPENAI_API_KEY = env.str('OPENAI_API_KEY')
-

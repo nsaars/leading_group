@@ -1,3 +1,5 @@
+import os.path
+
 from aiogram import types
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
@@ -12,7 +14,7 @@ async def ai_conversation_handler(message: types.Message, state: FSMContext):
         return
 
     state_data = await state.get_data()
-
+    print(state_data)
     history: list = state_data.get('history') or []
     response: dict = await AiChain.get_proper_response(message.text, history)
 
@@ -24,10 +26,16 @@ async def ai_conversation_handler(message: types.Message, state: FSMContext):
 
     media_group = []
     images = response.get('images')
-    if images:
+    caption_added = False
+    if images and any([os.path.exists(image) for image in images]):
         for image in images:
-            media_group.append(InputMediaPhoto(media=FSInputFile(image), caption=response.get('text')))
-        print(media_group, response.get('text'))
+            if os.path.exists(image):
+                if not caption_added:
+                    media_group.append(InputMediaPhoto(media=FSInputFile(image), caption=response.get('text')))
+                    caption_added = True
+                else:
+                    media_group.append(InputMediaPhoto(media=FSInputFile(image)))
+
         await message.answer_media_group(media=media_group, parse_mode=ParseMode.MARKDOWN)
     else:
 

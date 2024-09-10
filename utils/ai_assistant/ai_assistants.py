@@ -10,16 +10,17 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
-
 from utils.ai_assistant.rag.book_retriever import retrieve_book_text
+
+from data import config
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 class AiQuestionAnswering:
-    def __init__(self, llm: str = "gpt-4o-mini",
+    def __init__(self, llm: str = "gpt-4o",
                  embedding_model: str = "text-embedding-3-large",
                  prompt_templates_file_path: str = os.path.join(current_dir, "qa_prompt_templates.json"),
-                 search_quantity: int = 3):
+                 search_quantity: int = 2):
         self._store = LocalFileStore(os.path.join(current_dir, "cache"))
         self._underlying_embeddings = OpenAIEmbeddings(model=embedding_model)
         self._cached_embedder = CacheBackedEmbeddings.from_bytes_store(
