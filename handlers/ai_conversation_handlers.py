@@ -5,7 +5,7 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InputMediaPhoto, FSInputFile
 
-from utils.ai_assistant.ai_chain import AiChain
+from utils.ai.ai_chain import AiChain
 
 
 async def ai_conversation_handler(message: types.Message, state: FSMContext):

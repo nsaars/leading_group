@@ -3,7 +3,7 @@ from datetime import datetime
 from data.config import ADMIN, DOCUMENT_ID
 from database.crud.consultation import create_consultation
 from database.crud.user import get_user_by_id
-from utils.ai_assistant.ai_chain import AiChain
+from utils.ai.ai_chain import AiChain
 from utils.google_docs import add_text_to_document
 
 
