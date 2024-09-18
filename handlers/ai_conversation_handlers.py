@@ -15,7 +15,9 @@ async def ai_conversation_handler(message: types.Message, state: FSMContext):
 
     state_data = await state.get_data()
     print(state_data)
-    history: list = state_data.get('history') or []
+    history: list = state_data.get('history')
+    if not history:
+        history = [('assistant', f"Здравствуйте, {message.from_user.full_name}, я виртуальный ассистент компании Leading Group. Какой у вас вопрос?")]
     response: dict = await AiChain.get_proper_response(message.text, history)
 
     await state.update_data({'history': history + [('user', message.text), ('assistant', response.get('text'))]})
