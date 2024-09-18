@@ -20,7 +20,7 @@ from data import config
 parent_dir = Path(__file__).resolve().parent.parent
 
 class AiQuestionAnswering:
-    def __init__(self, llm: str = "gpt-4o",
+    def __init__(self, llm: str = "gpt-4o-mini",
                  embedding_model: str = "text-embedding-3-large",
                  prompt_templates_file_path: str = os.path.join(parent_dir, "prompts/qa_prompt_templates.json"),
                  search_quantity: int = 2):
