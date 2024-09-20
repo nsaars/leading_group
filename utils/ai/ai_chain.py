@@ -43,33 +43,42 @@ class AiChain:
         async for response in cls.get_responses(text, history):
             key, message = list(response.items())[0]
 
-            additional_kwargs = message.__getattribute__('additional_kwargs')
-            if additional_kwargs:
-                tool_calls = additional_kwargs.get('tool_calls')
-                if tool_calls and tool_calls[0].get('type') == 'function':
-                    function = tool_calls[0].get('function')
-                    if function.get('name') == 'schedule_consultation':
-                        success, text_response = await date_time_filter(**json.loads(function.get('arguments')))
 
-                        return {'text': text_response, 'success': success,
-                                'schedule_consultation_kwargs': json.loads(function.get('arguments')),
-                                'type': 'schedule_consultation'}
 
-            message_text = message.content
             if key == 'type':
-                print(message_text)
-                if message_text in ('1', '3'):
+                print(message)
+                if message in ('1', '3'):
                     cls.decision = 'question_response'
-                elif message_text == '4':
+                elif message == '4':
                     cls.decision = 'next_question_response'
                     return {'text': cls.responses[cls.decision], 'type': cls.decision}
                 else:
                     cls.decision = 'default_response'
             else:
+
+                additional_kwargs = message.__getattribute__('additional_kwargs')
+                if additional_kwargs:
+                    tool_calls = additional_kwargs.get('tool_calls')
+                    if tool_calls and tool_calls[0].get('type') == 'function':
+                        function = tool_calls[0].get('function')
+                        if function.get('name') == 'schedule_consultation':
+                            success, text_response = await date_time_filter(**json.loads(function.get('arguments')))
+
+                            return {'text': text_response, 'success': success,
+                                    'schedule_consultation_kwargs': json.loads(function.get('arguments')),
+                                    'type': 'schedule_consultation'}
+
+
+                message_text = message.content
+
                 cls.responses.update({key: message_text})
                 if cls.decision and cls.responses.get(cls.decision):
                     images = re.findall(r'image_\d+_\d+\.\w+', cls.responses[cls.decision])
                     response_text = re.sub(r'image_\d+_\d+\.\w+', '', cls.responses[cls.decision])
                     images = list(set(images))
-                    return {'text': response_text, 'type': cls.decision,
+
+                    res =  {'text': response_text, 'type': cls.decision,
                             'images': [os.path.join(current_dir, f"rag/images/{image_name}") for image_name in images]}
+                    if key == 'question_response':  #
+                        res['text_beginning'] = response.get('text_beginning')
+                    return res

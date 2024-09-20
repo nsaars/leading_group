@@ -167,4 +167,4 @@ if __name__ == '__main__':
                              struct, r"images",
                              image_descriptions_file_path=os.path.join(current_dir, "image_descriptions.json"),
                              )
-    pprint(response)
+    pprint(response['12']['sections']['12.2'])

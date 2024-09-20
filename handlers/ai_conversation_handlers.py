@@ -26,6 +26,9 @@ async def ai_conversation_handler(message: types.Message, state: FSMContext):
     #create_message(state_data.get('db_user_id'), 'user', message.text)
     #create_message(state_data.get('db_user_id'), 'assistant', response.get('text'), response.get('type'))
 
+    if response.get('text_beginning'): #
+        await message.answer(response.get('text_beginning'))
+
     media_group = []
     images = response.get('images')
     caption_added = False

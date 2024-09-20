@@ -2,6 +2,7 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
+from pprint import pprint
 from typing import List, Tuple, Dict
 from langchain.embeddings import CacheBackedEmbeddings
 from langchain.storage import LocalFileStore
@@ -24,16 +25,19 @@ class AiQuestionAnswering:
                  embedding_model: str = "text-embedding-3-large",
                  prompt_templates_file_path: str = os.path.join(parent_dir, "prompts/qa_prompt_templates.json"),
                  search_quantity: int = 2):
+
         self._store = LocalFileStore(os.path.join(parent_dir, "cache"))
         self._underlying_embeddings = OpenAIEmbeddings(model=embedding_model)
         self._cached_embedder = CacheBackedEmbeddings.from_bytes_store(
             self._underlying_embeddings, self._store, namespace=self._underlying_embeddings.model
         )
+
         self._llm = ChatOpenAI(model=llm)
 
         self._vectorstore = Chroma.from_documents(documents=self._get_docs_from_book_structure(),
                                                   embedding=self._cached_embedder)
-        self._retriever = self._vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": search_quantity})
+        self._retriever = self._vectorstore.as_retriever(search_type="similarity",
+                                                         search_kwargs={"k": search_quantity})
 
         with open(prompt_templates_file_path, "r", encoding='utf-8') as f:
             self._prompt_templates = json.load(f)
@@ -52,7 +56,7 @@ class AiQuestionAnswering:
             if chapter_text:
                 text_beginning = f"(Следующий текст с главы {chapter} '{chapter_dict['title']}'.)"
                 self._docs.append(Document(page_content=text_beginning + chapter_text,
-                                           metadata={'id': chapter, 'chapter': chapter, }))
+                                           metadata={'id': chapter, 'chapter': chapter}))
                 continue
             sections = chapter_dict.get('sections')
             for section, section_dict in sections.items():
@@ -70,7 +74,8 @@ class AiQuestionAnswering:
                                      f"Раздел этого подраздела: {section} '{section_dict['title']}'.\n" \
                                      f"Глава этого раздела: {chapter} '{chapter_dict['title']}')"
                     self._docs.append(Document(page_content=text_beginning + subsection_text,
-                                               metadata={'id': section, 'chapter': chapter, 'section': section}))
+                                               metadata={'id': section, 'chapter': chapter, 'section': section,
+                                                         'subsection': subsection}))
         return self._docs
 
     @staticmethod
@@ -113,13 +118,24 @@ class AiQuestionAnswering:
         question_template = ChatPromptTemplate(
             [self._system_prompt] +
             history + [('user', self._prompt_templates['qa_question'] +
-                        """\nБаза знаний для ответа на вопрос:\n{context}\n\nВопрос клиента: {message}""")])
-        embedding_text = (await AiHelpers().get_embedding_text(text, history)).get('embedding_text').content
-        context_docs = await self._retriever.ainvoke(embedding_text)
+                        """\n\nБаза знаний для ответа на вопрос:\n{context}\n\nВопрос клиента: {message}""")])
+        # proper_text = (await AiHelpers().get_proper_question(text, history)).get('embedding_text')
+        context_docs = await self._retriever.ainvoke(text)
+
         formatted_context = RunnableLambda(lambda x: self.format_docs(context_docs))
         response = await (
                 {"context": formatted_context, "message": RunnablePassthrough()}
                 | question_template
                 | self._llm
         ).ainvoke(text)
-        return {'question_response': response}
+        text_beginning = '' #
+        for doc in context_docs: #
+            text_beginning += "Глава " + doc.metadata['chapter'] + "\t"
+            if doc.metadata.get('section'):
+                text_beginning += "Раздел " + doc.metadata['section'] + "\t"
+            if doc.metadata.get('subsection'):
+                text_beginning += "Подраздел " + doc.metadata['subsection'] + "\t"
+            text_beginning += "\n"
+        text_beginning += '\n\n' #
+        print(text_beginning)
+        return {'question_response':  response, 'text_beginning': text_beginning} #

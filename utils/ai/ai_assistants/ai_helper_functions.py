@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+from http.client import responses
 from pathlib import Path
 from typing import List, Tuple, Dict
 
@@ -35,30 +36,38 @@ class AiHelpers:
         prompt_template = ChatPromptTemplate(
             history + [("system", self._prompt_templates['type_detector']), ("user", "{message}")]
         )
-        return {'type': await ({"message": RunnablePassthrough()}
+
+        response = await ({"message": RunnablePassthrough()}
                                | prompt_template
                                | self._llm
-                               ).ainvoke(text)}
+                               ).ainvoke(text)
+
+        return {'type': response.content}
 
     async def get_chat_summary(self, history: List[Tuple[str, str]] = None) -> Dict:
         prompt_template = ChatPromptTemplate([("system", self._prompt_templates['summary_system']),
                                               ("user", "{message}")])
         history_text = ''.join([f'{role}\n{message}\n\n' for role, message in history])
-        return {'summary': await ({"message": RunnablePassthrough()}
+
+        response = await ({"message": RunnablePassthrough()}
                                   | prompt_template
                                   | self._llm
                                   ).ainvoke(
-            f"'{self._prompt_templates['summary']}\nИстория чата с клиентом:\n{history_text}'")}
+            f"'{self._prompt_templates['summary']}\nИстория чата с клиентом:\n{history_text}'")
 
-    async def get_embedding_text(self, text: str, history: List[Tuple[str, str]] = None) -> Dict:
+        return {'summary': response.content}
+
+    async def get_proper_question(self, text: str, history: List[Tuple[str, str]] = None) -> Dict:
         prompt_template = ChatPromptTemplate(
-            history + [("system", self._prompt_templates['brief_answer']), ('user', "{message}")])
+            history + [('user', "{message}"), ("system", self._prompt_templates['change_question_system']), ("user", self._prompt_templates['change_question'])])
 
-        return {'embedding_text': await (
+        response = await (
                 {"message": RunnablePassthrough()}
                 | prompt_template
                 | self._llm
-        ).ainvoke(text)}
+        ).ainvoke(text)
+
+        return {'embedding_text': response.content}
 
     async def get_image_description(self, image_path: str, prev_text: str) -> Dict:
         with open(image_path, "rb") as image_file:
@@ -75,7 +84,8 @@ class AiHelpers:
         ]
 
         # Отправка запроса модели
-        return {'image_description': await self._llm.ainvoke(messages)}
+        response = await self._llm.ainvoke(messages)
+        return {'image_description': response.content}
 
 
 
